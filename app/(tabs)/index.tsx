@@ -1,36 +1,74 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    FlatList,
-    Pressable,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Animated,
+  FlatList,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 
 type Task = {
   id: string;
   title: string;
-  createdAt: Date;
+  createdAt: string;
   completed: boolean;
 };
 
-const initialData: Task[] = [
-  { id: '1', title: 'Review project requirements', createdAt: new Date(), completed: false },
-  { id: '2', title: 'Set up development environment', createdAt: new Date(), completed: true },
-  { id: '3', title: 'Design user interface mockups', createdAt: new Date(), completed: false },
-  { id: '4', title: 'Implement authentication flow', createdAt: new Date(), completed: false },
-  { id: '5', title: 'Write unit tests', createdAt: new Date(), completed: false },
+const STORAGE_KEY = '@tasks_data';
+
+const defaultTasks: Task[] = [
+  { id: '1', title: 'Review project requirements', createdAt: new Date().toISOString(), completed: false },
+  { id: '2', title: 'Set up development environment', createdAt: new Date().toISOString(), completed: true },
+  { id: '3', title: 'Design user interface mockups', createdAt: new Date().toISOString(), completed: false },
 ];
 
-export default function App() {
-  const [tasks, setTasks] = useState<Task[]>(initialData);
+export default function TasksScreen() {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
+
+  // Load tasks from storage on mount
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  // Save tasks to storage whenever they change
+  useEffect(() => {
+    if (!isLoading) {
+      saveTasks(tasks);
+    }
+  }, [tasks, isLoading]);
+
+  const loadTasks = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setTasks(JSON.parse(stored));
+      } else {
+        setTasks(defaultTasks);
+      }
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+      setTasks(defaultTasks);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveTasks = async (tasksToSave: Task[]) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasksToSave));
+    } catch (error) {
+      console.error('Failed to save tasks:', error);
+    }
+  };
 
   const handleDelete = (id: string) => {
     swipeableRefs.current.get(id)?.close();
@@ -47,15 +85,13 @@ export default function App() {
 
   const handleAdd = () => {
     if (newTask.trim()) {
-      setTasks(prev => [
-        {
-          id: Date.now().toString(),
-          title: newTask.trim(),
-          createdAt: new Date(),
-          completed: false,
-        },
-        ...prev,
-      ]);
+      const task: Task = {
+        id: Date.now().toString(),
+        title: newTask.trim(),
+        createdAt: new Date().toISOString(),
+        completed: false,
+      };
+      setTasks(prev => [task, ...prev]);
       setNewTask('');
     }
   };
@@ -82,13 +118,38 @@ export default function App() {
     );
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
   const completedCount = tasks.filter(t => t.completed).length;
   const pendingCount = tasks.length - completedCount;
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <StatusBar barStyle="dark-content" />
+        <Ionicons name="hourglass-outline" size={48} color="#6366f1" />
+        <Text style={styles.loadingText}>Loading tasks...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -161,7 +222,7 @@ export default function App() {
                   </Text>
                   <Text style={styles.taskMeta}>
                     <Ionicons name="time-outline" size={12} color="#94a3b8" />
-                    {' '}Swipe left to delete
+                    {' '}{formatDate(item.createdAt)}
                   </Text>
                 </View>
                 <Ionicons name="chevron-back" size={20} color="#cbd5e1" />
@@ -178,6 +239,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#64748b',
   },
   header: {
     backgroundColor: '#6366f1',
@@ -246,7 +316,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   taskRow: {
     flexDirection: 'row',
@@ -333,3 +403,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+
