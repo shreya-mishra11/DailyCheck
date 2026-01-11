@@ -1,50 +1,144 @@
-# Welcome to your Expo app 👋
+# TaskFlow
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A beautifully designed task management app built with React Native and Expo, featuring gesture-based interactions.
 
-## Get started
+![React Native](https://img.shields.io/badge/React_Native-0.81-blue)
+![Expo](https://img.shields.io/badge/Expo-54-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+### ✅ Task Management
+- Add tasks via text input
+- Mark tasks as complete/incomplete with a tap
+- Tasks persist across sessions using AsyncStorage
+- Clean, numbered task list with timestamps
 
-2. Start the app
+### 👆 Gesture Interactions
 
-   ```bash
-   npx expo start
-   ```
+#### Swipe to Delete
+Swipe any task left to reveal the delete action. Release to confirm deletion.
 
-In the output, you'll find options to open the app in a
+#### Slide to Cancel Recording
+Hold the mic button to start a voice memo recording. Slide left to cancel — just like WhatsApp!
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Hold mic → Start recording
+- Slide left → Cancel zone appears  
+- Release in cancel zone → Recording discarded
+- Release normally → Voice memo saved as task
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 🎨 Design
 
-## Get a fresh project
+A warm, editorial aesthetic that doesn't look AI-generated:
 
-When you're ready, run:
+- **Color Palette**: Warm cream background with amber/terracotta accents
+- **Typography**: Clean hierarchy with editorial styling
+- **Layout**: Numbered list items, subtle borders, intentional spacing
+- **Empty State**: Animated sparkle icon with gentle bounce and pulse
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Expo CLI
+- iOS Simulator / Android Emulator / Physical device with Expo Go
+
+### Installation
 
 ```bash
-npm run reset-project
+# Clone the repository
+git clone <repo-url>
+cd swipe-gesture
+
+# Install dependencies
+npm install
+
+# Start the development server
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Running the App
 
-## Learn more
+```bash
+# iOS
+npx expo start --ios
 
-To learn more about developing your project with Expo, look at the following resources:
+# Android  
+npx expo start --android
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Web
+npx expo start --web
+```
 
-## Join the community
+## Project Structure
 
-Join our community of developers creating universal apps.
+```
+swipe-gesture/
+├── app/
+│   ├── _layout.tsx      # Root layout with gesture handler
+│   └── index.tsx        # Main task screen
+├── assets/              # Images and icons
+├── app.json             # Expo configuration
+├── package.json         # Dependencies
+└── tsconfig.json        # TypeScript config
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Tech Stack
+
+- **Framework**: React Native + Expo
+- **Navigation**: Expo Router
+- **Gestures**: react-native-gesture-handler
+- **Storage**: @react-native-async-storage/async-storage
+- **Icons**: @expo/vector-icons (Ionicons)
+- **Language**: TypeScript
+
+## Key Dependencies
+
+```json
+{
+  "expo": "~54.0.31",
+  "react-native": "0.81.5",
+  "react-native-gesture-handler": "~2.28.0",
+  "@react-native-async-storage/async-storage": "2.1.2",
+  "@expo/vector-icons": "^15.0.3"
+}
+```
+
+## Gesture Implementation Details
+
+### Swipeable List Items
+Uses `Swipeable` from react-native-gesture-handler for smooth swipe-to-delete:
+
+```tsx
+<Swipeable
+  renderRightActions={renderDeleteAction}
+  rightThreshold={40}
+  friction={2}
+>
+  <TaskRow />
+</Swipeable>
+```
+
+### Slide to Cancel (WhatsApp-style)
+Uses `PanGestureHandler` with state tracking:
+
+```tsx
+<PanGestureHandler
+  onGestureEvent={handleSlide}
+  onHandlerStateChange={handleStateChange}
+>
+  <Animated.View style={{ transform: [{ translateX }] }}>
+    <MicButton />
+  </Animated.View>
+</PanGestureHandler>
+```
+
+## License
+
+MIT
+
+---
+
+Built with ❤️ using React Native and Expo
