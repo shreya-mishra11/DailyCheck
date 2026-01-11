@@ -29,6 +29,10 @@ Hold the mic button to start a voice memo recording. Slide left to cancel — ju
 
 ### 🎨 Design
 
+
+https://github.com/user-attachments/assets/19edb20d-faab-4776-8838-834bd3d06c9f
+
+
 A warm, editorial aesthetic that doesn't look AI-generated:
 
 - **Color Palette**: Warm cream background with amber/terracotta accents
