@@ -60,6 +60,12 @@ export default function TasksScreen() {
   const translateX = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const lockSlideAnim = useRef(new Animated.Value(0)).current;
+  
+  // Empty state animations
+  const emptyBounce = useRef(new Animated.Value(0)).current;
+  const emptyScale = useRef(new Animated.Value(1)).current;
+  const emptyRotate = useRef(new Animated.Value(0)).current;
+  const emptyOpacity = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
     loadTasks();
@@ -116,6 +122,92 @@ export default function TasksScreen() {
       lockSlideAnim.setValue(0);
     }
   }, [isRecording]);
+
+  // Cute empty state animation
+  useEffect(() => {
+    if (tasks.length === 0 && !isLoading) {
+      // Gentle bounce animation
+      const bounce = Animated.loop(
+        Animated.sequence([
+          Animated.timing(emptyBounce, {
+            toValue: -12,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(emptyBounce, {
+            toValue: 0,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+      // Subtle scale pulse
+      const scale = Animated.loop(
+        Animated.sequence([
+          Animated.timing(emptyScale, {
+            toValue: 1.08,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(emptyScale, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+      // Gentle wiggle rotation
+      const rotate = Animated.loop(
+        Animated.sequence([
+          Animated.timing(emptyRotate, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(emptyRotate, {
+            toValue: -1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(emptyRotate, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+      // Breathing opacity
+      const opacity = Animated.loop(
+        Animated.sequence([
+          Animated.timing(emptyOpacity, {
+            toValue: 1,
+            duration: 1800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(emptyOpacity, {
+            toValue: 0.5,
+            duration: 1800,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+      bounce.start();
+      scale.start();
+      rotate.start();
+      opacity.start();
+
+      return () => {
+        bounce.stop();
+        scale.stop();
+        rotate.stop();
+        opacity.stop();
+      };
+    }
+  }, [tasks.length, isLoading]);
 
   const loadTasks = async () => {
     try {
@@ -392,7 +484,26 @@ export default function TasksScreen() {
       {/* Task List */}
       {tasks.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>○</Text>
+          <Animated.View
+            style={[
+              styles.emptyCircle,
+              {
+                transform: [
+                  { translateY: emptyBounce },
+                  { scale: emptyScale },
+                  { rotate: emptyRotate.interpolate({
+                    inputRange: [-1, 0, 1],
+                    outputRange: ['-5deg', '0deg', '5deg'],
+                  })},
+                ],
+                opacity: emptyOpacity,
+              },
+            ]}
+          >
+            <Animated.View style={styles.emptyInnerCircle}>
+              <Ionicons name="sparkles-outline" size={32} color={colors.accent} />
+            </Animated.View>
+          </Animated.View>
           <Text style={styles.emptyTitle}>Nothing here yet</Text>
           <Text style={styles.emptySubtitle}>Add a task above to get started</Text>
         </View>
@@ -716,11 +827,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 100,
   },
-  emptyIcon: {
-    fontSize: 64,
-    color: colors.border,
-    marginBottom: 16,
-    fontWeight: '200',
+  emptyCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.accentLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 3,
+    borderColor: colors.accent,
+    borderStyle: 'dashed',
+  },
+  emptyInnerCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
   emptyTitle: {
     fontSize: 20,
