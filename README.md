@@ -36,6 +36,12 @@ A warm, editorial aesthetic that doesn't look AI-generated:
 - **Layout**: Numbered list items, subtle borders, intentional spacing
 - **Empty State**: Animated sparkle icon with gentle bounce and pulse
 
+### Video
+
+Uploading WhatsApp Video 2026-01-11 at 16.11.29.mp4…
+
+
+
 ## Getting Started
 
 ### Prerequisites
