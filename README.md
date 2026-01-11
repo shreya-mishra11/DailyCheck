@@ -121,7 +121,7 @@ Uses `Swipeable` from react-native-gesture-handler for smooth swipe-to-delete:
 </Swipeable>
 ```
 
-### Slide to Cancel (WhatsApp-style)
+### Slide to Cancel
 Uses `PanGestureHandler` with state tracking:
 
 ```tsx
